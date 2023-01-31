@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">布丁影视</string>
     <string name="app_home">首页</string>
-    <string name="app_source"></string>
+    <string name="app_source">https://v.5ms.cc/box/v.json</string>
 
     // Home Page //
     <string name="hm_ok">加载成功</string>
