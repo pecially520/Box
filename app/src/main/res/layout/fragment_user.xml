@@ -52,7 +52,7 @@
                 android:padding="@dimen/vs_3"
                 android:text="@string/hm_hist"
                 android:textColor="@color/color_FFFFFF_90"
-                android:textSize="@dimen/ts_24"
+                android:textSize="@dimen/ts_30"
                 android:textStyle="normal" />
 
         </LinearLayout>
@@ -90,7 +90,7 @@
                 android:padding="@dimen/vs_3"
                 android:text="@string/hm_live"
                 android:textColor="@color/color_FFFFFF_90"
-                android:textSize="@dimen/ts_24"
+                android:textSize="@dimen/ts_30"
                 android:textStyle="normal" />
 
         </LinearLayout>
@@ -128,7 +128,7 @@
                 android:padding="@dimen/vs_3"
                 android:text="@string/hm_fav"
                 android:textColor="@color/color_FFFFFF_90"
-                android:textSize="@dimen/ts_24"
+                android:textSize="@dimen/ts_30"
                 android:textStyle="normal" />
 
         </LinearLayout>
@@ -166,7 +166,7 @@
                 android:padding="@dimen/vs_3"
                 android:text="@string/hm_search"
                 android:textColor="@color/color_FFFFFF_90"
-                android:textSize="@dimen/ts_24"
+                android:textSize="@dimen/ts_30"
                 android:textStyle="normal" />
 
         </LinearLayout>
@@ -205,7 +205,7 @@
                 android:padding="@dimen/vs_3"
                 android:text="@string/hm_push"
                 android:textColor="@color/color_FFFFFF_90"
-                android:textSize="@dimen/ts_24"
+                android:textSize="@dimen/ts_30"
                 android:textStyle="normal" />
 
         </LinearLayout>
@@ -243,7 +243,7 @@
                 android:padding="@dimen/vs_3"
                 android:text="@string/hm_file"
                 android:textColor="@color/color_FFFFFF_90"
-                android:textSize="@dimen/ts_24"
+                android:textSize="@dimen/ts_30"
                 android:textStyle="normal" />
 
         </LinearLayout>
@@ -281,7 +281,7 @@
                 android:padding="@dimen/vs_3"
                 android:text="@string/hm_setting"
                 android:textColor="@color/color_FFFFFF_90"
-                android:textSize="@dimen/ts_24"
+                android:textSize="@dimen/ts_30"
                 android:textStyle="normal" />
 
         </LinearLayout>
