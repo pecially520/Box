@@ -36,6 +36,7 @@ import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.Response;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
+import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -58,8 +59,10 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
     private LinearLayout tvHistory;
     private LinearLayout tvCollect;
     private LinearLayout tvPush;
-    private HomeHotVodAdapter homeHotVodAdapter;
+    public static HomeHotVodAdapter homeHotVodAdapter;
     private List<Movie.Video> homeSourceRec;
+    private TvRecyclerView tvHotListForGrid;
+    private TvRecyclerView tvHotListForLine;
 
     public static UserFragment newInstance() {
         return new UserFragment();
@@ -76,6 +79,15 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
 
     @Override
     protected void onFragmentResume() {
+        if(Hawk.get(HawkConfig.HOME_REC_STYLE, false)){
+            tvHotListForGrid.setVisibility(View.VISIBLE);
+            tvHotListForLine.setVisibility(View.GONE);
+            tvHotListForGrid.setHasFixedSize(true);
+            tvHotListForGrid.setLayoutManager(new V7GridLayoutManager(this.mContext, 5));
+        }else {
+            tvHotListForGrid.setVisibility(View.GONE);
+            tvHotListForLine.setVisibility(View.VISIBLE);
+        }
         super.onFragmentResume();
         if (Hawk.get(HawkConfig.HOME_REC, 0) == 2) {
             List<VodInfo> allVodRecord = RoomDataManger.getAllVodRecord(20);
@@ -123,7 +135,8 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvHistory.setOnFocusChangeListener(focusChangeListener);
         tvPush.setOnFocusChangeListener(focusChangeListener);
         tvCollect.setOnFocusChangeListener(focusChangeListener);
-        TvRecyclerView tvHotList = findViewById(R.id.tvHotList);
+        tvHotListForGrid = findViewById(R.id.tvHotListForGrid);
+        tvHotListForLine = findViewById(R.id.tvHotListForLine);
         homeHotVodAdapter = new HomeHotVodAdapter();
         homeHotVodAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
@@ -131,7 +144,14 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 if (ApiConfig.get().getSourceBeanList().isEmpty())
                     return;
                 Movie.Video vod = ((Movie.Video) adapter.getItem(position));
-                if (vod.id != null && !vod.id.isEmpty()) {
+
+                // takagen99: CHeck if in Delete Mode
+                if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, 0) == 2) && HawkConfig.hotVodDelete) {
+                    homeHotVodAdapter.remove(position);
+                    VodInfo vodInfo = RoomDataManger.getVodInfo(vod.sourceKey, vod.id);
+                    RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
+                    Toast.makeText(mContext, getString(R.string.hm_hist_del), Toast.LENGTH_SHORT).show();
+                } else if (vod.id != null && !vod.id.isEmpty()) {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", vod.id);
                     bundle.putString("sourceKey", vod.sourceKey);
@@ -149,7 +169,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 }
             }
         });
-        // takagen99 : Long press to delete VOD History on Home Page
+        // takagen99 : Long press to trigger Delete Mode for VOD History on Home Page
         homeHotVodAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
@@ -158,10 +178,8 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 Movie.Video vod = ((Movie.Video) adapter.getItem(position));
                 // Additional Check if : Home Rec 0=豆瓣, 1=推荐, 2=历史
                 if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, 0) == 2)) {
-                    homeHotVodAdapter.remove(position);
-                    VodInfo vodInfo = RoomDataManger.getVodInfo(vod.sourceKey, vod.id);
-                    RoomDataManger.deleteVodRecord(vod.sourceKey, vodInfo);
-                    Toast.makeText(mContext, getString(R.string.hm_hist_del), Toast.LENGTH_SHORT).show();
+                    HawkConfig.hotVodDelete =  !HawkConfig.hotVodDelete;
+                    homeHotVodAdapter.notifyDataSetChanged();
                 } else {
                     Intent newIntent = new Intent(mContext, FastSearchActivity.class);
                     newIntent.putExtra("title", vod.name);
@@ -171,7 +189,8 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 return true;
             }
         });
-        tvHotList.setOnItemListener(new TvRecyclerView.OnItemListener() {
+
+        tvHotListForGrid.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
@@ -187,9 +206,42 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
 
             }
         });
-        tvHotList.setAdapter(homeHotVodAdapter);
+        tvHotListForGrid.setAdapter(homeHotVodAdapter);
+
+        tvHotListForLine.setOnItemListener(new TvRecyclerView.OnItemListener() {
+            @Override
+            public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
+                itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
+            }
+
+            @Override
+            public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
+                itemView.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
+            }
+
+            @Override
+            public void onItemClick(TvRecyclerView parent, View itemView, int position) {
+
+            }
+        });
+        tvHotListForLine.setAdapter(homeHotVodAdapter);
 
         initHomeHotVod(homeHotVodAdapter);
+
+        // takagen99: Initialize Icon Placement
+        boolean search_pos = Hawk.get(HawkConfig.HOME_SEARCH_POSITION, true);
+        if (!search_pos) {
+            tvSearch.setVisibility(View.VISIBLE);
+        } else {
+            tvSearch.setVisibility(View.GONE);
+        }
+        boolean menu_pos = Hawk.get(HawkConfig.HOME_MENU_POSITION, true);
+        if (!menu_pos) {
+            tvSetting.setVisibility(View.VISIBLE);
+        } else {
+            tvSetting.setVisibility(View.GONE);
+        }
+
     }
 
     private void initHomeHotVod(HomeHotVodAdapter adapter) {
@@ -270,6 +322,10 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
 
     @Override
     public void onClick(View v) {
+
+        // takagen99: Remove Delete Mode
+        HawkConfig.hotVodDelete = false;
+
         FastClickCheckUtil.check(v);
         if (v.getId() == R.id.tvLive) {
             jumpActivity(LivePlayActivity.class);
