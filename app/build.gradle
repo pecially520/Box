@@ -12,7 +12,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
-        versionName "v1.0.1_".concat(buildTime())
+        versionName "v1.0.2_".concat(buildTime())
         multiDexEnabled true
         //设置room的Schema的位置
         javaCompileOptions {
